@@ -99,7 +99,7 @@ class ReactDocGenMarkdownRenderer {
       template: defaultTemplate
     }, options);
 
-    this.template = handlebars.compile(options.template);
+    this.template = handlebars.compile(this.options.template);
     this.extension = '.md';
   }
 
