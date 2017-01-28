@@ -109,8 +109,8 @@ class ReactDocGenMarkdownRenderer {
 
     if (docs.props) {
       const sortedProps = {};
-      Object.keys(obj).sort().forEach(key => {
-        sortedProps[key] = obj[key];
+      Object.keys(docs.props).sort().forEach(key => {
+        sortedProps[key] = docs.props[key];
       });
 
       return this.template({
