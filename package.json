@@ -12,6 +12,10 @@
     "md",
     "markdown"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OriR/react-docgen-markdown-renderer"
+  },
   "author": "Ori Riner",
   "license": "ISC",
   "dependencies": {
