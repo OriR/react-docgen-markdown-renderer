@@ -33,7 +33,7 @@ Represents the base directory where all of your components live.</br>
 It's used when creating a markdown link at the top of the file.
 
 ##### template `String`
-`react-docgen-markdown-renderer` uses [Handlebarsjs](handlebarsjs.com) to generate the markdown template.</br>
+`react-docgen-markdown-renderer` uses [Handlebarsjs](http://handlebarsjs.com) to generate the markdown template.</br>
 Which means that you can use all the partials and helpers that `react-docgen-markdown-renderer` defines in your own template!</br>
 The default template is 
 ```javascript
