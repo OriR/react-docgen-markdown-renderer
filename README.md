@@ -12,6 +12,7 @@ Once installed, you can use the renderer like the example below
 ```javascript
 const path = require('path');
 const fs = require('fs');
+const reactDocgen = require('react-docgen');
 const ReactDocGenMarkdownRenderer = require('react-docgen-markdown-renderer');
 const componentPath = path.absolute(path.join(__.dirname, 'components/MyComponent.js'));
 const renderer = new ReactDocGenMarkdownRenderer({
@@ -20,7 +21,14 @@ const renderer = new ReactDocGenMarkdownRenderer({
 
 fs.readFile(componentPath, (error, content) => {
   const documentationPath = path.basename(componentPath, path.extname(componentPath)) + renderer.extension;
-  fs.writeFile(documentationPath, renderer.render(componentPath, content));
+  const doc = reactDocgen.parse(content);
+  fs.writeFile(documentationPath, renderer.render(
+    /* The path to the component, used for linking to the file. */
+    componentPath,
+    /* The actual react-docgen AST */
+    doc,
+    /* Array of component ASTs that this component composes*/
+    []));
 });
 ```
 
@@ -49,6 +57,26 @@ prop | type | default | required | description
 {{#each props}}
 **{{@key}}** | \`{{> (typePartial this) this}}\` | {{#if this.defaultValue}}\`{{{this.defaultValue}}}\`{{/if}} | {{#if this.required}}:white_check_mark:{{else}}:x:{{/if}} | {{#if this.description}}{{{this.description}}}{{/if}}
 {{/each}}
+
+{{#if isMissingComposes}}
+*Some or all of the composed components are missing from the list below because a documentation couldn't be generated for them.
+See the source code of the component for more information.*
+{{/if}}
+
+{{#if composes.length}}
+{{componentName}} gets more \`propTypes\` from these composed components
+{{/if}}
+
+{{#each composes}}
+#### {{this.componentName}}
+
+prop | type | default | required | description
+---- | :----: | :-------: | :--------: | -----------
+{{#each this.props}}
+**{{@key}}** | \`{{> (typePartial this) this}}\` | {{#if this.defaultValue}}\`{{{this.defaultValue}}}\`{{/if}} | {{#if this.required}}:white_check_mark:{{else}}:x:{{/if}} | {{#if this.description}}{{{this.description}}}{{/if}}
+{{/each}}
+
+{{/each}}
 `;
 ```
 
@@ -63,7 +91,13 @@ The description given to that component.
 ##### `props // Object[#]<Prop>`
 A hash-map of the flattened props this component exposes.</br>
 The key is the flattened name of the prop.</br>
-each `Prop` can have a description, a required flag and a defaultValue. The type is inferred with the helper `typePartial` like so `{{> (typePartial this) this}}`.</br></br>
+each `Prop` can have a description, a required flag and a defaultValue. The type is inferred with the helper `typePartial` like so `{{> (typePartial this) this}}`.
+##### `composes // Array<Component>`
+An array of components that the current component composes.</br>
+It has the same structure as the original react-docgen AST plus a property named `componentName`.
+##### `isMissingComposes // Boolean`
+Whether or not there are composes that are missing from the composes array.
+</br></br>
 
 `react-docgen-markdown-renderer` also comes with some useful partials and helpers if you'll want to take advantage of.
 ##### `typePartial`
@@ -161,10 +195,10 @@ So this notation is helping define the needed types in a flattened manner.
 In case of `arrayOf`, `objectOf` and `oneOfType` there also exists the internal type of each value which is noted with `<>`.
 ##### I want to create my own renderer
 This is not as hard as it sounds, but there are some things that you have to know.</br>
-A renderer has an `extension` property and a `render(file, content) => String` function.</br>
-Once you have these two you're basically done.</br>
-`react-docgen-markdown-renderer` uses `react-docgen` to generate a documentation object which helps populate the template above.</br>
-It's highly recommended that you use it as well, but not that it doesn't flatten the props by default.
+A renderer has an `extension` property and a `render(file, doc, composes) => String` function.</br>
+Once you have these two you're basically done.</br></br>
+`react-docgen-markdown-renderer` expects a `react-docgen` documentation object which helps populate the template above.</br>
+It's highly recommended that you use it as well, but note that it doesn't flatten the props by default.
 Since you're writing your own renderer you won't have access to all the partials and helpers defined here, but you have the freedom to create your own!</br></br>
 
 For more you can always look at the code or open an issue :)

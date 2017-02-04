@@ -53,7 +53,7 @@ prop | type | default | required | description
 
 {{#if isMissingComposes}}
 *Some or all of the composed components are missing from the list below because a documentation couldn't be generated for them.
-See the source code for the component for more information.*
+See the source code of the component for more information.*
 {{/if}}
 
 {{#if composes.length}}
