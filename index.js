@@ -1,7 +1,6 @@
 const path = require('path');
 const os = require('os');
 const process = require('process');
-const reactDocs = require('react-docgen');
 const handlebars = require('handlebars');
 
 const getType = (obj) => {
@@ -26,7 +25,7 @@ handlebars.registerPartial('arrayOf', 'Array[]<{{#with (typeObject this)}}{{> (t
 handlebars.registerPartial('objectOf', 'Object[#]<{{#with (typeObject this)}}{{> (typePartial value) value}}{{/with}}>');
 handlebars.registerPartial('instanceOf', '{{#with (typeObject this)}}{{value}}{{/with}}');
 handlebars.registerPartial('enum', 'Enum({{#with (typeObject this)}}{{#each value}}{{{this.value}}}{{#unless @last}},{{/unless}}{{/each}}{{/with}})');
-handlebars.registerPartial('union', 'Union<{{#with (typeObject this)}}{{#each value}}{{> (typePartial this) this}}{{#unless @last}}\\|{{/unless}}{{/each}}{{/with}}>');
+handlebars.registerPartial('union', 'Union<{{#with (typeObject this)}}{{#each value}}{{> (typePartial this) this}}{{#unless @last}}|{{/unless}}{{/each}}{{/with}}>');
 
 handlebars.registerHelper('typeObject', getType);
 
@@ -50,6 +49,26 @@ prop | type | default | required | description
 ---- | :----: | :-------: | :--------: | -----------
 {{#each props}}
 **{{@key}}** | \`{{> (typePartial this) this}}\` | {{#if this.defaultValue}}\`{{{this.defaultValue}}}\`{{/if}} | {{#if this.required}}:white_check_mark:{{else}}:x:{{/if}} | {{#if this.description}}{{{this.description}}}{{/if}}
+{{/each}}
+
+{{#if isMissingComposes}}
+*Some or all of the composed components are missing from the list below because a documentation couldn't be generated for them.
+See the source code for the component for more information.*
+{{/if}}
+
+{{#if composes.length}}
+{{componentName}} gets more \`propTypes\` from these composed components
+{{/if}}
+
+{{#each composes}}
+#### {{this.componentName}}
+
+prop | type | default | required | description
+---- | :----: | :-------: | :--------: | -----------
+{{#each this.props}}
+**{{@key}}** | \`{{> (typePartial this) this}}\` | {{#if this.defaultValue}}\`{{{this.defaultValue}}}\`{{/if}} | {{#if this.required}}:white_check_mark:{{else}}:x:{{/if}} | {{#if this.description}}{{{this.description}}}{{/if}}
+{{/each}}
+
 {{/each}}
 `;
 
@@ -90,6 +109,21 @@ typeFlatteners = {
   }
 };
 
+const flattenProps = (props) => {
+  const sortedProps = {};
+  if (props) {
+    const flattenedProps = Object.keys(props).reduce((seed, prop) => {
+      flattenProp(seed, props[prop], prop);
+      return seed;
+    }, {});
+
+    Object.keys(flattenedProps).sort().forEach(key => {
+      sortedProps[key] = flattenedProps[key];
+    });
+  }
+
+  return sortedProps;
+};
 
 
 class ReactDocGenMarkdownRenderer {
@@ -103,26 +137,29 @@ class ReactDocGenMarkdownRenderer {
     this.extension = '.md';
   }
 
-  render(file, content) {
-    const docs = reactDocs.parse(content);
+  render(file, docs, composes) {
     const componentName = path.basename(file, path.extname(file));
 
-    if (docs.props) {
-      const sortedProps = {};
-      Object.keys(docs.props).sort().forEach(key => {
-        sortedProps[key] = docs.props[key];
-      });
+    const sortedProps = flattenProps(docs.props);
 
-      return this.template({
-        componentName,
-        srcLink: file.replace(this.options.componentsBasePath + '/', ''),
-        description: docs.description,
-        props: sortedProps
+    const composesFlattened = [];
+    if(composes.length !== 0){
+      composes.forEach((compose) => {
+        composesFlattened.push({
+          componentName: compose.componentName,
+          props: flattenProps(compose.props)
+        })
       });
     }
 
-    // No proper documentation was provided on the component.
-    return '#### NO DOCUMENTATION PROVIDED FOR ' + componentName + ' component';
+    return this.template({
+      componentName,
+      srcLink: file.replace(this.options.componentsBasePath + '/', ''),
+      description: docs.description,
+      isMissingComposes: (docs.composes || []).length !== composes.length,
+      props: sortedProps,
+      composes: composesFlattened
+    });
   }
 }
 
