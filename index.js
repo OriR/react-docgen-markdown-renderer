@@ -25,7 +25,7 @@ handlebars.registerPartial('arrayOf', 'Array[]<{{#with (typeObject this)}}{{> (t
 handlebars.registerPartial('objectOf', 'Object[#]<{{#with (typeObject this)}}{{> (typePartial value) value}}{{/with}}>');
 handlebars.registerPartial('instanceOf', '{{#with (typeObject this)}}{{value}}{{/with}}');
 handlebars.registerPartial('enum', 'Enum({{#with (typeObject this)}}{{#each value}}{{{this.value}}}{{#unless @last}},{{/unless}}{{/each}}{{/with}})');
-handlebars.registerPartial('union', 'Union<{{#with (typeObject this)}}{{#each value}}{{> (typePartial this) this}}{{#unless @last}}|{{/unless}}{{/each}}{{/with}}>');
+handlebars.registerPartial('union', 'Union<{{#with (typeObject this)}}{{#each value}}{{> (typePartial this) this}}{{#unless @last}} \\| {{/unless}}{{/each}}{{/with}}>');
 
 handlebars.registerHelper('typeObject', getType);
 
