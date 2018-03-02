@@ -1,6 +1,7 @@
 const path = require('path');
 const os = require('os');
 const process = require('process');
+const unixify = require('unixify');
 const handlebars = require('handlebars');
 
 const getType = (obj) => {
@@ -154,7 +155,7 @@ class ReactDocGenMarkdownRenderer {
 
     return this.template({
       componentName,
-      srcLink: file.replace(this.options.componentsBasePath + '/', ''),
+      srcLink: unixify(file).replace(unixify(this.options.componentsBasePath) + '/', ''),
       description: docs.description,
       isMissingComposes: (docs.composes || []).length !== composes.length,
       props: sortedProps,
