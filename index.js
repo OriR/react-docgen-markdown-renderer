@@ -2,82 +2,12 @@ const path = require('path');
 const os = require('os');
 const process = require('process');
 const handlebars = require('handlebars');
-
-const getType = (obj) => {
-  return (obj.type && typeof obj.type.name === 'string') ? obj.type : (typeof obj.name === 'string') ? obj : undefined;
-};
-
-handlebars.registerPartial('Unknown', 'Unknown');
-
-handlebars.registerPartial('func', 'Function');
-handlebars.registerPartial('array', 'Array');
-handlebars.registerPartial('object', 'Object');
-handlebars.registerPartial('string', 'String');
-handlebars.registerPartial('number', 'Number');
-handlebars.registerPartial('bool', 'Boolean');
-handlebars.registerPartial('node', 'ReactNode');
-handlebars.registerPartial('element', 'ReactElement');
-handlebars.registerPartial('any', '*');
-handlebars.registerPartial('custom', '(custom validator)');
-handlebars.registerPartial('shape', 'Shape');
-
-handlebars.registerPartial('arrayOf', 'Array[]<{{#with (typeObject this)}}{{> (typePartial value) value}}{{/with}}>');
-handlebars.registerPartial('objectOf', 'Object[#]<{{#with (typeObject this)}}{{> (typePartial value) value}}{{/with}}>');
-handlebars.registerPartial('instanceOf', '{{#with (typeObject this)}}{{value}}{{/with}}');
-handlebars.registerPartial('enum', 'Enum({{#with (typeObject this)}}{{#each value}}{{{this.value}}}{{#unless @last}},{{/unless}}{{/each}}{{/with}})');
-handlebars.registerPartial('union', 'Union<{{#with (typeObject this)}}{{#each value}}{{> (typePartial this) this}}{{#unless @last}} \\| {{/unless}}{{/each}}{{/with}}>');
-
-handlebars.registerHelper('typeObject', getType);
-
-handlebars.registerHelper('typePartial', function(type) {
-  const partials = [
-    'any', 'array', 'arrayOf', 'bool', 'custom', 'element', 'enum', 'func',
-    'node', 'number', 'object', 'string', 'union', 'instanceOf', 'objectOf', 'shape'
-  ];
-  const typeObj = getType(type);
-  return typeObj && partials.includes(typeObj.name) ? typeObj.name : 'Unknown';
-});
-
-const defaultTemplate = `
-## {{componentName}}
-
-{{#if srcLink }}From [\`{{srcLink}}\`]({{srcLink}}){{/if}}
-
-{{#if description}}{{{description}}}{{/if}}
-
-prop | type | default | required | description
----- | :----: | :-------: | :--------: | -----------
-{{#each props}}
-**{{@key}}** | \`{{> (typePartial this) this}}\` | {{#if this.defaultValue}}\`{{{this.defaultValue}}}\`{{/if}} | {{#if this.required}}:white_check_mark:{{else}}:x:{{/if}} | {{#if this.description}}{{{this.description}}}{{/if}}
-{{/each}}
-
-{{#if isMissingComposes}}
-*Some or all of the composed components are missing from the list below because a documentation couldn't be generated for them.
-See the source code of the component for more information.*
-{{/if}}
-
-{{#if composes.length}}
-{{componentName}} gets more \`propTypes\` from these composed components
-{{/if}}
-
-{{#each composes}}
-#### {{this.componentName}}
-
-prop | type | default | required | description
----- | :----: | :-------: | :--------: | -----------
-{{#each this.props}}
-**{{@key}}** | \`{{> (typePartial this) this}}\` | {{#if this.defaultValue}}\`{{{this.defaultValue}}}\`{{/if}} | {{#if this.required}}:white_check_mark:{{else}}:x:{{/if}} | {{#if this.description}}{{{this.description}}}{{/if}}
-{{/each}}
-
-{{/each}}
-`;
+const handlebarsConfig = require('./handlebarsConfig');
+const getType = require('./getObjectType');
 
 let typeFlatteners = {};
 
-
-const replaceNewLine = (value) => value.replace(new RegExp(os.EOL, 'g'), ' ');
-const normalizeValue = (value, hasInnerValue) => value ? hasInnerValue ? replaceNewLine(value.value) : replaceNewLine(value) : value;
-
+const normalizeValue = value => value ? value.replace(new RegExp(os.EOL, 'g'), ' ') : value;
 
 const flattenProp = (seed, currentObj, name, isImmediateNesting) => {
   const typeObject = getType(currentObj);
@@ -89,8 +19,8 @@ const flattenProp = (seed, currentObj, name, isImmediateNesting) => {
 
   if (!isImmediateNesting) {
     seed[name] = Object.assign({}, currentObj, {
-      description: normalizeValue(currentObj.description, false),
-      defaultValue: normalizeValue(currentObj.defaultValue, true)
+      description: normalizeValue(currentObj.description),
+      defaultValue: normalizeValue(currentObj.defaultValue && currentObj.defaultValue.value)
     });
   }
 };
@@ -106,6 +36,11 @@ typeFlatteners = {
   },
   objectOf(seed, objectOfType, name) {
     flattenProp(seed, objectOfType.value, name + '[#]', true);
+  },
+  union(seed, unionType, name) {
+    unionType.value.forEach((type, index) => {
+      flattenProp(seed, type, name + `<${index + 1}>`, true);
+    });
   }
 };
 
@@ -125,40 +60,39 @@ const flattenProps = (props) => {
   return sortedProps;
 };
 
+const getHandlebars = (plugins, handlebars) => plugins.reduce((handlebars, plugin) => plugin(handlebars), handlebars);
 
 class ReactDocGenMarkdownRenderer {
   constructor(options) {
     this.options = Object.assign({
-      componentsBasePath: process.cwd(),
-      template: defaultTemplate
+      componentsBasePath: process.cwd()
     }, options);
 
-    this.template = handlebars.compile(this.options.template);
     this.extension = '.md';
   }
 
+  compile(options) {
+    this.options = Object.assign({
+      template: handlebarsConfig.defaultTemplate,
+      handlebarsPlugins: [],
+      typePartials: {}
+    }, this.options, options);
+
+    const basePlugin = handlebarsConfig.createPlugin(this.options.typePartials);
+    this.template = getHandlebars([basePlugin].concat(this.options.handlebarsPlugins), handlebars).compile(this.options.template);
+  }
+
   render(file, docs, composes) {
-    const componentName = path.basename(file, path.extname(file));
-
-    const sortedProps = flattenProps(docs.props);
-
-    const composesFlattened = [];
-    if(composes.length !== 0){
-      composes.forEach((compose) => {
-        composesFlattened.push({
-          componentName: compose.componentName,
-          props: flattenProps(compose.props)
-        })
-      });
-    }
-
     return this.template({
-      componentName,
+      componentName: path.basename(file, path.extname(file)),
       srcLink: file.replace(this.options.componentsBasePath + '/', ''),
       description: docs.description,
       isMissingComposes: (docs.composes || []).length !== composes.length,
-      props: sortedProps,
-      composes: composesFlattened
+      props: flattenProps(docs.props),
+      composes: composes.map(compose => ({
+        componentName: compose.componentName,
+        props: flattenProps(compose.props)
+      }))
     });
   }
 }
