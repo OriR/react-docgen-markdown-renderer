@@ -65,7 +65,8 @@ const getHandlebars = (plugins, handlebars) => plugins.reduce((handlebars, plugi
 class ReactDocGenMarkdownRenderer {
   constructor(options) {
     this.options = Object.assign({
-      componentsBasePath: process.cwd()
+      componentsBasePath: process.cwd(),
+      remoteComponentsBasePath: undefined
     }, options);
 
     this.extension = '.md';
@@ -85,7 +86,8 @@ class ReactDocGenMarkdownRenderer {
   render(file, docs, composes) {
     return this.template({
       componentName: path.basename(file, path.extname(file)),
-      srcLink: file.replace(this.options.componentsBasePath + '/', ''),
+      srcLink: file.replace(this.options.componentsBasePath + path.sep, ''),
+      srcLinkUrl: file.replace(this.options.componentsBasePath, this.options.remoteComponentsBasePath).replace(/\\/g, '/'),
       description: docs.description,
       isMissingComposes: (docs.composes || []).length !== composes.length,
       props: flattenProps(docs.props),

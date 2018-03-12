@@ -38,7 +38,7 @@ const createPlugin = (typePartials) => (handlebars) => {
 const defaultTemplate = `
 ## {{componentName}}
 
-{{#if srcLink }}From [\`{{srcLink}}\`]({{srcLink}}){{/if}}
+{{#if srcLinkUrl }}From [\`{{srcLink}}\`]({{srcLinkUrl}}){{/if}}
 
 {{#if description}}{{{description}}}{{/if}}
 
