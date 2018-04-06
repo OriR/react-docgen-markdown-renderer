@@ -1,7 +1,7 @@
 const getType = require('./getObjectType');
 
-const createPlugin = (typePartials) => (handlebars) => {
-  const partials = Object.assign({}, {
+const createPlugin = () => (handlebars) => {
+  const partials = {
     Unknown: 'Unknown',
     func: 'Function',
     array: 'Array',
@@ -19,7 +19,7 @@ const createPlugin = (typePartials) => (handlebars) => {
     instanceOf: '{{#with (typeObject this)}}{{value}}{{/with}}',
     enum: 'Enum({{#with (typeObject this)}}{{#each value}}{{{this.value}}}{{#unless @last}},{{/unless}}{{/each}}{{/with}})',
     union: 'Union<{{#with (typeObject this)}}{{#each value}}{{> (typePartial this) this}}{{#unless @last}} \\| {{/unless}}{{/each}}{{/with}}>'
-  }, typePartials);
+  };
 
   Object.keys(partials).forEach(partial => {
     handlebars.registerPartial(partial, partials[partial]);

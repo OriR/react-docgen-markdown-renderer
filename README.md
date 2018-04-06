@@ -43,6 +43,17 @@ Represents the base directory where all of your components live.</br>
 It's used when creating a markdown link at the top of the file.
 
 #### compile
+##### handlebars
+The handlebars instance to make the renderer work with.
+If you're using just this render, you can pass in `require('handlebars')`.
+
+If you're using multiple renderers, this ensures the context of each renderer won't bleed to the other.
+In order to create another instance of handlebars use
+```js
+const handlebars = require('handlebars');
+const newInstance = handlebars.create();
+```
+
 ##### options.template `String`
 `react-docgen-markdown-renderer` uses [Handlebarsjs](http://handlebarsjs.com) to generate the markdown template.</br>
 Which means that you can use all the partials and helpers that `react-docgen-markdown-renderer` defines in your own template!</br>
@@ -84,7 +95,7 @@ prop | type | default | required | description
 ```
 ##### options.handlebarsPlugins `Array<Function>`
 An array of functions that take a handlebars instance and returns it.
-Useful when you want to extend the the `handlebars` instance with some extra helpers of your own.
+Useful when you want to extend the the `handlebars` instance with some extra helpers/partials of your own.
 Example:
 ```js
 {
@@ -93,19 +104,6 @@ Example:
       ...
     });
   }]
-}
-```
-##### options.typePartials `Object`
-A hash-object where the key is a propType type and the value is the rendering partial string value.
-Technically can be achieved with `options.handlebarsPlugins`,
-but `typePartials` is much easier if you want to override partials for existing types.
-And if you're adding handlers to `reactDocgen.parse(...)` that add custom types, that's the place to add them.
-Example:
-```js
-{
-  typePartials: {
-    func: 'Func'
-  }
 }
 ```
 

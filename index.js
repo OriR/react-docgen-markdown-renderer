@@ -1,7 +1,6 @@
 const path = require('path');
 const os = require('os');
 const process = require('process');
-const handlebars = require('handlebars');
 const handlebarsConfig = require('./handlebarsConfig');
 const getType = require('./getObjectType');
 
@@ -13,8 +12,7 @@ const flattenProp = (seed, currentObj, name, isImmediateNesting) => {
   const typeObject = getType(currentObj);
 
   if (typeObject) {
-    const flattener = typeFlatteners[typeObject.name] || (() =>{});
-    flattener(seed, typeObject, name);
+    (typeFlatteners[typeObject.name] || (() =>{}))(seed, typeObject, name);
   }
 
   if (!isImmediateNesting) {
@@ -72,22 +70,20 @@ class ReactDocGenMarkdownRenderer {
     this.extension = '.md';
   }
 
-  compile(options) {
+  compile(handlebars, options) {
     this.options = Object.assign({
       template: handlebarsConfig.defaultTemplate,
-      handlebarsPlugins: [],
-      typePartials: {}
+      handlebarsPlugins: []
     }, this.options, options);
 
-    const basePlugin = handlebarsConfig.createPlugin(this.options.typePartials);
-    this.template = getHandlebars([basePlugin].concat(this.options.handlebarsPlugins), handlebars).compile(this.options.template);
+    this.template = getHandlebars([handlebarsConfig.createPlugin(), ...this.options.handlebarsPlugins], handlebars).compile(this.options.template);
   }
 
   render(file, docs, composes) {
     return this.template({
       componentName: path.basename(file, path.extname(file)),
-      srcLink: file.replace(this.options.componentsBasePath + path.sep, ''),
-      srcLinkUrl: file.replace(this.options.componentsBasePath, this.options.remoteComponentsBasePath).replace(/\\/g, '/'),
+      srcLink: this.options.remoteComponentsBasePath && file.replace(this.options.componentsBasePath + path.sep, ''),
+      srcLinkUrl: this.options.remoteComponentsBasePath && file.replace(this.options.componentsBasePath, this.options.remoteComponentsBasePath).replace(/\\/g, '/'),
       description: docs.description,
       isMissingComposes: (docs.composes || []).length !== composes.length,
       props: flattenProps(docs.props),
