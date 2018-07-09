@@ -40,6 +40,11 @@ This property is optional.</br>
 Represents the base directory where all of your components live.</br>
 It's used when creating a markdown link at the top of the file.
 
+##### componentsName `String`
+This property is optional.</br>
+Choose how the components should be named in the documentation: either with the display name (`displayName`) or with the file name (`fileName`).</br>
+Default `displayName`.
+
 ##### template `String`
 `react-docgen-markdown-renderer` uses [Handlebarsjs](http://handlebarsjs.com) to generate the markdown template.</br>
 Which means that you can use all the partials and helpers that `react-docgen-markdown-renderer` defines in your own template!</br>
