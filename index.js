@@ -130,7 +130,6 @@ class ReactDocGenMarkdownRenderer {
   constructor(options) {
     this.options = Object.assign({
       componentsBasePath: process.cwd(),
-      componentsName: 'displayName',
       template: defaultTemplate
     }, options);
 
@@ -139,7 +138,7 @@ class ReactDocGenMarkdownRenderer {
   }
 
   render(file, docs, composes) {
-    const componentName = this.options.componentsName === 'fileName' ? path.basename(file, path.extname(file)) : docs.displayName;
+    const componentName = docs.displayName ? docs.displayName : path.basename(file, path.extname(file));
 
     const sortedProps = flattenProps(docs.props);
 
