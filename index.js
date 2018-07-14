@@ -138,7 +138,7 @@ class ReactDocGenMarkdownRenderer {
   }
 
   render(file, docs, composes) {
-    const componentName = path.basename(file, path.extname(file));
+    const componentName = docs.displayName ? docs.displayName : path.basename(file, path.extname(file));
 
     const sortedProps = flattenProps(docs.props);
 
