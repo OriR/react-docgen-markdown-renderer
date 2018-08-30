@@ -20,6 +20,7 @@
   "license": "ISC",
   "dependencies": {
     "handlebars": "4.0.6",
-    "react-docgen": "2.14.0"
+    "react-docgen": "2.14.0",
+    "unixify": "^1.0.0"
   }
 }
