@@ -15,9 +15,7 @@ const fs = require('fs');
 const reactDocgen = require('react-docgen');
 const ReactDocGenMarkdownRenderer = require('react-docgen-markdown-renderer');
 const componentPath = path.absolute(path.join(__.dirname, 'components/MyComponent.js'));
-const renderer = new ReactDocGenMarkdownRenderer({
-  componentsBasePath: __.dirname
-});
+const renderer = new ReactDocGenMarkdownRenderer(/* constructor options object */);
 
 fs.readFile(componentPath, (error, content) => {
   const documentationPath = path.basename(componentPath, path.extname(componentPath)) + renderer.extension;
@@ -32,17 +30,20 @@ fs.readFile(componentPath, (error, content) => {
 });
 ```
 
-By default `react-docgen-markdown-renderer` will use `process.cwd()` as the `componentsBasePath`.</br>
+#### constructor
+**options.componentsBasePath `String`**
+This property is optional - defaults to `process.cwd()`.</br>
+Represents the base directory where all of your components are stored locally.</br>
+It's used as the text for the markdown link at the top of the file - if not specified the link won't appear.
 
-#### options
-##### componentsBasePath `String`
+**options.remoteComponentsBasePath `String`**
 This property is optional.</br>
-Represents the base directory where all of your components live.</br>
-It's used when creating a markdown link at the top of the file.
+Represents the base directory where all of your components are stored remotely.</br>
+It's used as the base url for markdown link at the top of the file - if not specified the link won't appear.
 
-##### template `String`
-`react-docgen-markdown-renderer` uses [Handlebarsjs](http://handlebarsjs.com) to generate the markdown template.</br>
-Which means that you can use all the partials and helpers that `react-docgen-markdown-renderer` defines in your own template!</br>
+**options.template `TemplateObject`**
+This property is optional - uses the default template if not specified.</br>
+A template should be an object constrcuted through the `template` method coming from `react-docgen-renderer-template`.
 The default template is 
 ```javascript
 const defaultTemplate = `
@@ -80,35 +81,8 @@ prop | type | default | required | description
 `;
 ```
 
-#### Creating your own template
-As you can see from the default template you have access to several objects within your template.</br>
-##### `componentName // String` 
-The name of the component that is being documented.
-##### `srcLink // String`
-The relative path to the component (based on the `componentsBasePath`). 
-##### `description // String`
-The description given to that component.
-##### `props // Object[#]<Prop>`
-A hash-map of the flattened props this component exposes.</br>
-The key is the flattened name of the prop.</br>
-each `Prop` can have a description, a required flag and a defaultValue. The type is inferred with the helper `typePartial` like so `{{> (typePartial this) this}}`.
-##### `composes // Array<Component>`
-An array of components that the current component composes.</br>
-It has the same structure as the original react-docgen AST plus a property named `componentName`.
-##### `isMissingComposes // Boolean`
-Whether or not there are composes that are missing from the composes array.
-</br></br>
-
-`react-docgen-markdown-renderer` also comes with some useful partials and helpers if you'll want to take advantage of.
-##### `typePartial`
-This needs to be used in order to render the type of the prop - travels all the way down to the the leaf nodes to determine the exact type for each flattened prop.
-##### `typeObject`
-This returns the actual type object of a type, whether it has a `type` property or just a `name`.
-##### all React.PropTypes
-All `React.PropTypes` have their own partials that know how to render the type given the relevant type object.
-
-#### Example
-##### input
+### Example
+#### input
 ```javascript
 /**
  * This is an example component.
@@ -181,22 +155,23 @@ MyComponent.propTypes = {
     ])
   };
 ```
-##### output
+#### output
 <img width="828" alt="Example markdown output" src="https://cloud.githubusercontent.com/assets/2384068/22395353/0622d310-e544-11e6-855c-bb61b5ca46f6.png">
 
 ### FAQ
-##### What is this weird type notation?
+#### What is this weird type notation?
 Well, I wanted to create a table for all of my props. Which means that I can't easily nest the components according to their actual structure.</br>
 So this notation is helping define the needed types in a flattened manner.
 * `[]` - An `arrayOf` notation.
 * `.` - A `shape` notation.
-* `[#]` -An `objectOf` notation.
+* `[#]` - An `objectOf` notation.
+* `<{number}>` - A `union` notation, where the `number` indicates the index of the option in the union.
 
 In case of `arrayOf`, `objectOf` and `oneOfType` there also exists the internal type of each value which is noted with `<>`.
-##### I want to create my own renderer
+#### I want to create my own renderer
 This is not as hard as it sounds, but there are some things that you have to know.</br>
-A renderer has an `extension` property and a `render(file, doc, composes) => String` function.</br>
-Once you have these two you're basically done.</br></br>
+A renderer has an `extension` property, a `render(file, doc, composes) => String` and `compile(options) => void` (as described above) functions.</br>
+Once you have these you're basically done.</br></br>
 `react-docgen-markdown-renderer` expects a `react-docgen` documentation object which helps populate the template above.</br>
 It's highly recommended that you use it as well, but note that it doesn't flatten the props by default.
 Since you're writing your own renderer you won't have access to all the partials and helpers defined here, but you have the freedom to create your own!</br></br>

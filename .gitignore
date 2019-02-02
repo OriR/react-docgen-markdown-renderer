@@ -12,7 +12,7 @@ pids
 lib-cov
 
 # Coverage directory used by tools like istanbul
-coverage
+coverage.html
 
 # nyc test coverage
 .nyc_output
@@ -38,3 +38,4 @@ jspm_packages
 
 # Webstorm
 .idea
+.vscode

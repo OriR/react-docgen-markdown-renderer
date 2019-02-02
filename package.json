@@ -1,13 +1,16 @@
 {
   "name": "react-docgen-markdown-renderer",
-  "version": "1.1.0",
-  "description": "Renders a markdown based on a react-docgen object",
-  "main": "index.js",
+  "version": "2.0.0",
+  "description": "Renders a markdown template based on a react-docgen object",
+  "main": "lib/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "lab",
+    "test:debug": "lab --coverage-exclude lib --inspect-brk",
+    "test:coverage:html": "lab -r console -o stdout -r html -o coverage.html"
   },
   "keywords": [
     "react",
+    "react-docgen",
     "component",
     "md",
     "markdown"
@@ -17,9 +20,16 @@
     "url": "https://github.com/OriR/react-docgen-markdown-renderer"
   },
   "author": "Ori Riner",
-  "license": "ISC",
+  "license": "MIT",
+  "peerDependencies": {
+    "react-docgen": "^2.20.0"
+  },
   "dependencies": {
-    "handlebars": "4.0.6",
-    "react-docgen": "2.14.0"
+    "react-docgen-renderer-template": "^0.0.x"
+  },
+  "devDependencies": {
+    "code": "^5.2.0",
+    "lab": "^15.5.0",
+    "react-docgen": "^2.20.0"
   }
 }
