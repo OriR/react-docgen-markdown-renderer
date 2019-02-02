@@ -15,11 +15,7 @@ const fs = require('fs');
 const reactDocgen = require('react-docgen');
 const ReactDocGenMarkdownRenderer = require('react-docgen-markdown-renderer');
 const componentPath = path.absolute(path.join(__.dirname, 'components/MyComponent.js'));
-const renderer = new ReactDocGenMarkdownRenderer({
-  componentsBasePath: __.dirname
-});
-
-renderer.compile(/* takes an options object */);
+const renderer = new ReactDocGenMarkdownRenderer(/* constructor options object */);
 
 fs.readFile(componentPath, (error, content) => {
   const documentationPath = path.basename(componentPath, path.extname(componentPath)) + renderer.extension;
@@ -34,29 +30,20 @@ fs.readFile(componentPath, (error, content) => {
 });
 ```
 
-By default `react-docgen-markdown-renderer` will use `process.cwd()` as the `componentsBasePath`.</br>
-
 #### constructor
-##### options.componentsBasePath `String`
+**options.componentsBasePath `String`**
+This property is optional - defaults to `process.cwd()`.</br>
+Represents the base directory where all of your components are stored locally.</br>
+It's used as the text for the markdown link at the top of the file - if not specified the link won't appear.
+
+**options.remoteComponentsBasePath `String`**
 This property is optional.</br>
-Represents the base directory where all of your components live.</br>
-It's used when creating a markdown link at the top of the file.
+Represents the base directory where all of your components are stored remotely.</br>
+It's used as the base url for markdown link at the top of the file - if not specified the link won't appear.
 
-#### compile
-##### handlebars
-The handlebars instance to make the renderer work with.
-If you're using just this render, you can pass in `require('handlebars')`.
-
-If you're using multiple renderers, this ensures the context of each renderer won't bleed to the other.
-In order to create another instance of handlebars use
-```js
-const handlebars = require('handlebars');
-const newInstance = handlebars.create();
-```
-
-##### options.template `String`
-`react-docgen-markdown-renderer` uses [Handlebarsjs](http://handlebarsjs.com) to generate the markdown template.</br>
-Which means that you can use all the partials and helpers that `react-docgen-markdown-renderer` defines in your own template!</br>
+**options.template `TemplateObject`**
+This property is optional - uses the default template if not specified.</br>
+A template should be an object constrcuted through the `template` method coming from `react-docgen-renderer-template`.
 The default template is 
 ```javascript
 const defaultTemplate = `
@@ -93,46 +80,6 @@ prop | type | default | required | description
 {{/each}}
 `;
 ```
-##### options.handlebarsPlugins `Array<Function>`
-An array of functions that take a handlebars instance and returns it.
-Useful when you want to extend the the `handlebars` instance with some extra helpers/partials of your own.
-Example:
-```js
-{
-  handlebarsPlugins: [(handlebars) => {
-    handlebars.registerHelper('myCustomHelper', () => {
-      ...
-    });
-  }]
-}
-```
-
-### Creating your own template
-As you can see from the default template you have access to several objects within your template.</br>
-#### `componentName // String`
-The name of the component that is being documented.
-#### `srcLink // String`
-The relative path to the component (based on the `componentsBasePath`). 
-#### `description // String`
-The description given to that component.
-#### `props // Object[#]<Prop>`
-A hash-map of the flattened props this component exposes.</br>
-The key is the flattened name of the prop.</br>
-each `Prop` can have a description, a required flag and a defaultValue. The type is inferred with the helper `typePartial` like so `{{> (typePartial this) this}}`.
-#### `composes // Array<Component>`
-An array of components that the current component composes.</br>
-It has the same structure as the original react-docgen AST plus a property named `componentName`.
-#### `isMissingComposes // Boolean`
-Whether or not there are composes that are missing from the composes array.
-</br></br>
-
-`react-docgen-markdown-renderer` also comes with some useful partials and helpers if you'll want to take advantage of.
-#### `typePartial`
-This needs to be used in order to render the type of the prop - travels all the way down to the the leaf nodes to determine the exact type for each flattened prop.
-#### `typeObject`
-This returns the actual type object of a type, whether it has a `type` property or just a `name`.
-#### all React.PropTypes
-All `React.PropTypes` have their own partials that know how to render the type given the relevant type object.
 
 ### Example
 #### input
