@@ -8,7 +8,6 @@ const { simpleComponent, simpleMarkdown } = require('./utils');
 lab.experiment('complex render', () => {
   lab.beforeEach(({ context }) => {
     context.renderer = new ReactDocGenMarkdownRenderer();
-    context.renderer.compile();
   });
 
   lab.experiment('union', () => {

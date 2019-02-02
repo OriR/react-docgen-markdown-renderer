@@ -8,7 +8,6 @@ const { simpleComponent, simpleMarkdown } = require('./utils');
 lab.experiment('prop metadata render', () => {
   lab.beforeEach(({ context }) => {
     context.renderer = new ReactDocGenMarkdownRenderer();
-    context.renderer.compile();
   });
 
   lab.test('description', ({ context }) => {

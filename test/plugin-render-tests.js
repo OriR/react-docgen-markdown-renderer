@@ -7,11 +7,7 @@ const { template, type } = require('react-docgen-renderer-template');
 const { simpleComponent, simpleMarkdown } = require('./utils');
 
 lab.experiment('plugin render', () => {
-  lab.beforeEach(({ context }) => {
-    context.renderer = new ReactDocGenMarkdownRenderer();
-  });
-
-  lab.test('new type', ({ context }) => {
+  lab.test('new type', () => {
     const docgen = reactDocgen.parse(simpleComponent(
       {
         componentName: 'MyComponent',
@@ -21,20 +17,17 @@ lab.experiment('plugin render', () => {
 
     docgen.props.newTypeProp.type.name = 'awesome';
 
-    context.renderer.compile(
-      {
-        plugins: [{
-          getTypeMapping({ extension }) {
-            return {
-              awesome: type`${({ context, getType }) => {
-                return context.type.raw;
-              }}`
-            }
-          }
-        }]
+    const renderer = new ReactDocGenMarkdownRenderer({ template: ReactDocGenMarkdownRenderer.defaultTemplate.setPlugins([{
+      getTypeMapping({ extension }) {
+        return {
+          awesome: type`${({ context, getType }) => {
+            return context.type.raw;
+          }}`
+        }
       }
-    );
-    const result = context.renderer.render(
+    }]) })
+
+    const result = renderer.render(
       './some/path',
       docgen,
       []);
@@ -44,20 +37,16 @@ lab.experiment('plugin render', () => {
     ] }));
   });
 
-  lab.test('custom template', ({ context }) => {
+  lab.test('custom template', () => {
     const docgen = reactDocgen.parse(simpleComponent(
       {
         componentName: 'MyComponent'
       })
     );
 
-    context.renderer.compile(
-      {
-        template: template({})`${({ context }) => `This is my awesome template! I can even use the context here! look: ${context.componentName}`}`
-      }
-    );
+    const renderer = new ReactDocGenMarkdownRenderer({ template: template({})`${({ context }) => `This is my awesome template! I can even use the context here! look: ${context.componentName}`}` })
 
-    const result = context.renderer.render(
+    const result = renderer.render(
       './some/path',
       docgen,
       []);

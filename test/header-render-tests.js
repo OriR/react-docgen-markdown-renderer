@@ -8,7 +8,6 @@ const { simpleComponent, simpleMarkdown } = require('./utils');
 lab.experiment('header render', () => {
   lab.beforeEach(({ context }) => {
     context.renderer = new ReactDocGenMarkdownRenderer();
-    context.renderer.compile();
   });
 
   lab.test('without description', ({ context }) => {
@@ -58,7 +57,6 @@ lab.experiment('header render', () => {
       componentsBasePath: './some/path',
       remoteComponentsBasePath: 'https://github.com/gen-org/component-library/tree/master/some/path'
     });
-    renderer.compile();
 
     const result = renderer.render(
       './some/path/MyComponent.js',
@@ -77,7 +75,6 @@ lab.experiment('header render', () => {
       componentsBasePath: './some/path',
       remoteComponentsBasePath: 'https://github.com/gen-org/component-library/tree/master/some/path'
     });
-    renderer.compile();
 
     const result = renderer.render(
       './some/path/MyComponent.js',

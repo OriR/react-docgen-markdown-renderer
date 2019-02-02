@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "code": "^5.2.0",
-    "lab": "^15.5.0"
+    "lab": "^15.5.0",
+    "react-docgen": "^2.20.0"
   }
 }

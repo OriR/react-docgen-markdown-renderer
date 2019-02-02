@@ -8,7 +8,6 @@ const { simpleComponent, simpleMarkdown } = require('./utils');
 lab.experiment('simple render', () => {
   lab.beforeEach(({ context }) => {
     context.renderer = new ReactDocGenMarkdownRenderer();
-    context.renderer.compile();
   });
 
   lab.test('string type', ({ context }) => {
