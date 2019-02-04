@@ -246,6 +246,9 @@ lab.experiment('simple render', () => {
   });
 
   lab.test('unknown type', ({ context }) => {
+    const warn = console.warn;
+    console.warn = () => {};
+
     const docgen = reactDocgen.parse(simpleComponent(
       {
         componentName: 'MyComponent',
@@ -263,6 +266,8 @@ lab.experiment('simple render', () => {
     expect(result).to.equal(simpleMarkdown({ types: [
       { name: 'unknownProp', value: 'Unknown' }
     ] }));
+
+    console.warn = warn;
   });
 
   lab.test('no displayName', ({ context }) => {

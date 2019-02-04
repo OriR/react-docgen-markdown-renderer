@@ -1,6 +1,6 @@
 {
   "name": "react-docgen-markdown-renderer",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Renders a markdown template based on a react-docgen object",
   "main": "lib/index.js",
   "scripts": {
@@ -22,14 +22,14 @@
   "author": "Ori Riner",
   "license": "MIT",
   "peerDependencies": {
-    "react-docgen": "^2.20.0"
+    "react-docgen": "^2 || ^3"
   },
   "dependencies": {
-    "react-docgen-renderer-template": "^0.0.1"
+    "react-docgen-renderer-template": "^0.0.2"
   },
   "devDependencies": {
     "code": "^5.2.0",
     "lab": "^15.5.0",
-    "react-docgen": "^2.20.0"
+    "react-docgen": "^3.0.0"
   }
 }
