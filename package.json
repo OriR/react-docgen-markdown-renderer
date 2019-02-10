@@ -1,11 +1,11 @@
 {
   "name": "react-docgen-markdown-renderer",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Renders a markdown template based on a react-docgen object",
   "main": "lib/index.js",
   "scripts": {
     "test": "lab",
-    "test:debug": "lab --coverage-exclude lib --inspect-brk",
+    "test:debug": "node --inspect-brk=0.0.0.0 ./node_modules/.bin/lab --coverage-exclude lib",
     "test:coverage:html": "lab -r console -o stdout -r html -o coverage.html"
   },
   "keywords": [

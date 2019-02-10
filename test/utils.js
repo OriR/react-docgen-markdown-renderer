@@ -1,7 +1,7 @@
 const os = require('os')
 
 module.exports = {
-  simpleComponent: ({ componentName, props = [], description = '', composes = [] }) => {
+  simpleComponent: ({ componentName, props = [], description = '', composes = [], extra = '' }) => {
     return `
     import React, { Component } from 'react';
     import PropTypes from 'prop-types';
@@ -22,7 +22,9 @@ module.exports = {
     
     ${componentName}.defaultProps = {
       ${props.map(prop => prop.default ? `${prop.name}: ${prop.default}` : '')}
-    };`;
+    };
+    
+    ${extra}`;
   },
   simpleMarkdown: ({ componentName = 'MyComponent', description = '', link = '', types = [], isMissing = false, composes = [] }) => {
     return `## ${componentName}${link}${description}

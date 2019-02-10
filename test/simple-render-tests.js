@@ -245,6 +245,101 @@ lab.experiment('simple render', () => {
     ] }));
   });
 
+  lab.test('arrayOf custom type', ({ context }) => {
+    const result = context.renderer.render(
+      './some/path',
+      reactDocgen.parse(simpleComponent(
+        {
+          extra: `MyComponent.customShape = PropTypes.shape({ id: PropTypes.number });`,
+          componentName: 'MyComponent',
+          props:[{ name: 'customProp', type: 'PropTypes.arrayOf(MyComponent.customShape)', custom: true }]
+        })),
+      []);
+    
+    expect(result).to.equal(simpleMarkdown({ types: [
+      { name: 'customProp', value: 'Array[]<MyComponent.customShape>' }
+    ] }));
+  });
+
+  lab.test('objectOf custom type', ({ context }) => {
+    const result = context.renderer.render(
+      './some/path',
+      reactDocgen.parse(simpleComponent(
+        {
+          extra: `MyComponent.customShape = PropTypes.shape({ id: PropTypes.number });`,
+          componentName: 'MyComponent',
+          props:[{ name: 'customProp', type: 'PropTypes.objectOf(MyComponent.customShape)', custom: true }]
+        })),
+      []);
+    
+    expect(result).to.equal(simpleMarkdown({ types: [
+      { name: 'customProp', value: 'Object[#]<MyComponent.customShape>' }
+    ] }));
+  });
+
+  lab.test('union custom type', ({ context }) => {
+    const result = context.renderer.render(
+      './some/path',
+      reactDocgen.parse(simpleComponent(
+        {
+          extra: `MyComponent.customType = [PropTypes.string, PropTypes.shape({ id: PropTypes.number })];`,
+          componentName: 'MyComponent',
+          props:[{ name: 'customProp', type: 'PropTypes.oneOfType(MyComponent.customShape)', custom: true }]
+        })),
+      []);
+
+    expect(result).to.equal(simpleMarkdown({ types: [
+      { name: 'customProp', value: 'Union<MyComponent.customShape>' }
+    ] }));
+  });
+
+  lab.test('union with custom type', ({ context }) => {
+    const result = context.renderer.render(
+      './some/path',
+      reactDocgen.parse(simpleComponent(
+        {
+          extra: `MyComponent.customShape = PropTypes.shape({ id: PropTypes.number });`,
+          componentName: 'MyComponent',
+          props:[{ name: 'customProp', type: 'PropTypes.oneOfType([PropTypes.string, MyComponent.customShape])', custom: true }]
+        })),
+      []);
+
+    expect(result).to.equal(simpleMarkdown({ types: [
+      { name: 'customProp', value: 'Union<String\\|MyComponent.customShape>' },
+      { name: 'customProp<1>', value: 'String' },
+      { name: 'customProp<2>', value: 'MyComponent.customShape' }
+    ] }));
+  });
+
+  lab.test('enum custom type', ({ context }) => {
+    const result = context.renderer.render(
+      './some/path',
+      reactDocgen.parse(simpleComponent(
+        {
+          extra: `MyComponent.customEnum = ['Some', 'values', 1, 2 ];`,
+          componentName: 'MyComponent',
+          props:[{ name: 'oneOfProp', type: `PropTypes.oneOf(MyComponent.customEnum)`, custom: true }]
+        })),
+      []);
+    
+    expect(result).to.equal(simpleMarkdown({ types: [{ name: 'oneOfProp', value: "Enum(MyComponent.customEnum)" }] }));
+  });
+
+
+  lab.test('enum with custom value', ({ context }) => {
+    const result = context.renderer.render(
+      './some/path',
+      reactDocgen.parse(simpleComponent(
+        {
+          extra: `MyComponent.customEnumValue = ['Value', 1, 2];`,
+          componentName: 'MyComponent',
+          props:[{ name: 'oneOfProp', type: `PropTypes.oneOf(['Some', ...MyComponent.customEnumValue])`, custom: true }]
+        })),
+      []);
+    
+    expect(result).to.equal(simpleMarkdown({ types: [{ name: 'oneOfProp', value: "Enum('Some', ...MyComponent.customEnumValue)" }] }));
+  });
+
   lab.test('unknown type', ({ context }) => {
     const warn = console.warn;
     console.warn = () => {};
