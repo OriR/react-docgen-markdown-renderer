@@ -1,6 +1,6 @@
 {
   "name": "react-docgen-markdown-renderer",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "Renders a markdown template based on a react-docgen object",
   "main": "lib/index.js",
   "scripts": {
