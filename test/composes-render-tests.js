@@ -84,6 +84,39 @@ lab.experiment('compose render', () => {
     expect(result).to.equal(simpleMarkdown({ types: [{ name: 'stringProp', value: 'String' }], isMissing: true }));
   });
 
+  lab.test('imported types', ({ context }) => {
+    const result = context.renderer.render(
+      './some/path',
+      reactDocgen.parse(simpleComponent(
+        {
+          imports: 'import { customImportedShape } from \'./customImportedShape.js\'',
+          componentName: 'MyComponent',
+          props: [{ name: 'customImportedShape', custom: true, type: 'customImportedShape' }]
+        })),
+      []);
+    
+    expect(result).to.equal(simpleMarkdown({ types: [{ name: 'customImportedShape', value: 'customImportedShape' }] }));
+  });
+
+
+  lab.test('nested imported types', ({ context }) => {
+    const result = context.renderer.render(
+      './some/path',
+      reactDocgen.parse(simpleComponent(
+        {
+          imports: 'import { customImportedShape } from \'./customImportedShape.js\'',
+          componentName: 'MyComponent',
+          props: [{ name: 'nestedImportedShape', custom: true, type: 'PropTypes.oneOfType([PropTypes.arrayOf(customImportedShape), customImportedShape])' }]
+        })),
+      []);
+    
+    expect(result).to.equal(simpleMarkdown({ types: [
+      { name: 'nestedImportedShape', value: 'Union<Array[]<customImportedShape>\\|customImportedShape>' },
+      { name: 'nestedImportedShape<1>', value: 'Array[]<customImportedShape>' },
+      { name: 'nestedImportedShape<2>', value: 'customImportedShape' }
+    ] }));
+  });
+
   lab.test('extra', ({ context }) => {
     const result = context.renderer.render(
       './some/path',

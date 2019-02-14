@@ -1,10 +1,11 @@
 const os = require('os')
 
 module.exports = {
-  simpleComponent: ({ componentName, props = [], description = '', composes = [], extra = '' }) => {
+  simpleComponent: ({ imports = '', componentName, props = [], description = '', composes = [], extra = '' }) => {
     return `
     import React, { Component } from 'react';
     import PropTypes from 'prop-types';
+    ${imports}
     ${composes.map(compose => `import ${compose} from './src/components/${compose}';`).join(os.EOL)}
     ${description}
     export default class ${componentName} extends Component {
