@@ -1,0 +1,6 @@
+{
+  "linters": {
+    "*.js": ["./node_modules/.bin/prettier --write", "git add"],
+      "*.{md,json}": ["./node_modules/.bin/prettier --write", "git add"]
+  }
+}
