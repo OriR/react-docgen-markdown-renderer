@@ -275,6 +275,28 @@ lab.experiment('simple render', () => {
     );
   });
 
+  lab.test('exact type', ({ context }) => {
+    const result = context.renderer.render(
+      './some/path',
+      reactDocgen.parse(
+        simpleComponent({
+          componentName: 'MyComponent',
+          props: [{ name: 'shapeProp', type: 'exact({ index: PropTypes.number })' }],
+        }),
+      ),
+      [],
+    );
+
+    expect(result).to.equal(
+      simpleMarkdown({
+        types: [
+          { name: 'shapeProp', value: 'exact' },
+          { name: 'shapeProp.index', value: 'Number' },
+        ],
+      }),
+    );
+  });
+
   lab.test('custom type', ({ context }) => {
     const result = context.renderer.render(
       './some/path',
@@ -304,6 +326,32 @@ lab.experiment('simple render', () => {
       reactDocgen.parse(
         simpleComponent({
           extra: `MyComponent.customShape = PropTypes.shape({ id: PropTypes.number });`,
+          componentName: 'MyComponent',
+          props: [
+            {
+              name: 'customProp',
+              type: 'PropTypes.arrayOf(MyComponent.customShape)',
+              custom: true,
+            },
+          ],
+        }),
+      ),
+      [],
+    );
+
+    expect(result).to.equal(
+      simpleMarkdown({
+        types: [{ name: 'customProp', value: 'Array[]<MyComponent.customShape>' }],
+      }),
+    );
+  });
+
+  lab.test('arrayOf custom type', ({ context }) => {
+    const result = context.renderer.render(
+      './some/path',
+      reactDocgen.parse(
+        simpleComponent({
+          extra: `MyComponent.customShape = PropTypes.exact({ id: PropTypes.number });`,
           componentName: 'MyComponent',
           props: [
             {
