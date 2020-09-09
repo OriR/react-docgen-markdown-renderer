@@ -275,6 +275,28 @@ lab.experiment('simple render', () => {
     );
   });
 
+  lab.test('exact type', ({ context }) => {
+    const result = context.renderer.render(
+      './some/path',
+      reactDocgen.parse(
+        simpleComponent({
+          componentName: 'MyComponent',
+          props: [{ name: 'exactProp', type: 'exact({ index: PropTypes.number })' }],
+        }),
+      ),
+      [],
+    );
+
+    expect(result).to.equal(
+      simpleMarkdown({
+        types: [
+          { name: 'exactProp', value: 'Exact' },
+          { name: 'exactProp.index', value: 'Number' },
+        ],
+      }),
+    );
+  });
+
   lab.test('custom type', ({ context }) => {
     const result = context.renderer.render(
       './some/path',
